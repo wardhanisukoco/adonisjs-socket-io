@@ -1,13 +1,14 @@
-import { Server, Namespace } from 'socket.io'
+import { Server } from 'socket.io'
 import type { LoggerService, HttpServerService } from '@adonisjs/core/types'
 import { SocketConfig } from './socket_config.js'
+import { SocketChannel } from './socket_channel.js'
 
 export class SocketManager {
   #logger: LoggerService
   #http: HttpServerService
   private _io: Server | null = null
   private channels = new Array<string>()
-  private namespaces = new Map<string, Namespace>()
+  private namespaces = new Map<string, SocketChannel>()
 
   constructor(
     public config: SocketConfig,
@@ -16,7 +17,6 @@ export class SocketManager {
   ) {
     this.#logger = logger
     this.#http = http
-    // this.#app = app
   }
 
   public async boot() {
@@ -30,10 +30,11 @@ export class SocketManager {
       this.#logger.info(`socket.io listening on port ${PORT}`)
     } else {
       this.#logger.warn('socket.io HTTP server is not available, skipping listen')
+      return
     }
 
     this.channels.forEach((name) => {
-      this.registerChannel(name)
+      this.namespaces.get(`/${name}`)?.setNamespace(this.io.of(`/${name}`))
     })
   }
   public get booted(): boolean {
@@ -43,14 +44,12 @@ export class SocketManager {
     if (!this._io) throw new Error('SocketManager not booted')
     return this._io
   }
-  public channel(channelName: string) {
-    if (this.channels.includes(channelName)) {
-      this.#logger.info(`socket.io already registered channel: ${channelName}`)
-      return
+  public channel(channelName: string): SocketChannel {
+    if (!this._io) {
+      this.#logger.warn(`socket.io not initialized, channel ${channelName} will not be registered`)
+      this.channels.push(channelName)
+      return new SocketChannel(channelName)
     }
-    this.channels.push(channelName)
-  }
-  public registerChannel(channelName: string): Namespace {
     const namespaceName = `/${channelName}`
 
     if (this.namespaces.has(namespaceName)) {
@@ -59,7 +58,8 @@ export class SocketManager {
     }
 
     const namespace = this.io.of(namespaceName)
-    this.namespaces.set(namespaceName, namespace)
+    const channel = new SocketChannel(channelName).setNamespace(namespace)
+    this.namespaces.set(namespaceName, channel)
     this.#logger.info(`socket.io register channel: ${channelName}`)
 
     namespace.on('connection', (socket) => {
@@ -71,8 +71,11 @@ export class SocketManager {
         socket.leave(roomName)
         this.#logger.info(`socket.io ${socket.id} left ${namespaceName}:${roomName}`)
       })
+      socket.on('message', (data) => {
+        this.broadcast(channelName, socket.id, data)
+      })
     })
-    return namespace
+    return channel
   }
 
   public broadcast(channelName: string, roomId: any, content: any) {
