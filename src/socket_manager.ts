@@ -60,7 +60,18 @@ export class SocketManager {
 
     const namespace = this.io.of(namespaceName)
     this.namespaces.set(namespaceName, namespace)
-    this.#logger.info(`socket.io already registered channel: ${channelName}`)
+    this.#logger.info(`socket.io register channel: ${channelName}`)
+
+    namespace.on('connection', (socket) => {
+      socket.on('subscribe', (roomName) => {
+        socket.join(roomName)
+        this.#logger.info(`socket.io ${socket.id} joined ${namespaceName}:${roomName}`)
+      })
+      socket.on('unsubscribe', (roomName) => {
+        socket.leave(roomName)
+        this.#logger.info(`socket.io ${socket.id} left ${namespaceName}:${roomName}`)
+      })
+    })
     return namespace
   }
 
