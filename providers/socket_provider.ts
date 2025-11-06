@@ -8,7 +8,7 @@ declare module '@adonisjs/core/types' {
   }
 }
 
-export class SocketProvider {
+export default class SocketProvider {
   #socket: SocketManager | null = null
   constructor(protected app: ApplicationService) {}
 
@@ -43,5 +43,3 @@ export class SocketProvider {
     }
   }
 }
-
-export default SocketProvider

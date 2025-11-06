@@ -60,6 +60,7 @@ export class SocketManager {
 
     const namespace = this.io.of(namespaceName)
     this.namespaces.set(namespaceName, namespace)
+    this.#logger.info(`socket.io already registered channel: ${channelName}`)
     return namespace
   }
 

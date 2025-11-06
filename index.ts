@@ -9,4 +9,3 @@
 
 export { configure } from './configure.js'
 export * from './src/index.js'
-export { SocketProvider } from './providers/socket_provider.js'
