@@ -34,8 +34,21 @@ export class SocketManager {
     }
 
     this.channelNames.forEach((name) => {
-      this.channels.get(`/${name}`)?.setNamespace(this.io.of(`/${name}`))
+      this.registerChannel(name)
     })
+  }
+  private registerChannel(name: string): SocketChannel {
+    const namespaceName = `/${name}`
+    if (this.channels.has(namespaceName)) {
+      this.#logger.info(`socket.io already registered channel: ${name}`)
+      return this.channels.get(namespaceName)!
+    }
+
+    const namespace = this.io.of(namespaceName)
+    const channel = new SocketChannel(name).setNamespace(namespace)
+    this.channels.set(namespaceName, channel)
+    this.#logger.info(`socket.io register channel: ${name}`)
+    return channel
   }
   public get booted(): boolean {
     return this._io !== null
@@ -46,30 +59,19 @@ export class SocketManager {
   }
   public channel(name: string): SocketChannel {
     if (!this._io) {
-      this.#logger.warn(`socket.io not initialized, channel ${name} will not be registered`)
+      this.#logger.warn(`socket.io not booted, channel ${name} will lately registered`)
       this.channelNames.push(name)
       return new SocketChannel(name)
     }
-    const namespaceName = `/${name}`
-
-    if (this.channels.has(namespaceName)) {
-      this.#logger.info(`socket.io already registered channel: ${name}`)
-      return this.channels.get(namespaceName)!
-    }
-
-    const namespace = this.io.of(namespaceName)
-    const channel = new SocketChannel(name).setNamespace(namespace)
-    this.channels.set(namespaceName, channel)
-    this.#logger.info(`socket.io register channel: ${name}`)
-
-    namespace.on('connection', (socket) => {
+    const channel = this.registerChannel(name)
+    channel.getNamespace().on('connection', (socket) => {
       socket.on('subscribe', (identifier) => {
         socket.join(identifier)
-        this.#logger.info(`socket.io ${socket.id} joined ${namespaceName}:${identifier}`)
+        this.#logger.info(`socket.io ${socket.id} joined ${name}:${identifier}`)
       })
       socket.on('unsubscribe', (identifier) => {
         socket.leave(identifier)
-        this.#logger.info(`socket.io ${socket.id} left ${namespaceName}:${identifier}`)
+        this.#logger.info(`socket.io ${socket.id} left ${name}:${identifier}`)
       })
       socket.on('message', (data) => {
         this.broadcast(name, socket.id, data)
