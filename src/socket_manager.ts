@@ -1,4 +1,4 @@
-import { Server } from 'socket.io'
+import { Server, Namespace } from 'socket.io'
 import type { LoggerService, HttpServerService } from '@adonisjs/core/types'
 import { SocketConfig } from './socket_config.js'
 import { SocketChannel } from './socket_channel.js'
@@ -45,10 +45,24 @@ export class SocketManager {
     }
 
     const namespace = this.io.of(namespaceName)
+    this.registerChannelEvents(name, namespace)
+
     const channel = new SocketChannel(name).setNamespace(namespace)
     this.channels.set(namespaceName, channel)
     this.#logger.info(`socket.io register channel: ${name}`)
     return channel
+  }
+  private registerChannelEvents(name: string, namespace: Namespace): void {
+    namespace.on('connection', (socket) => {
+      socket.on('subscribe', (identifier) => {
+        socket.join(identifier)
+        this.#logger.info(`socket.io ${socket.id} joined ${name}:${identifier}`)
+      })
+      socket.on('unsubscribe', (identifier) => {
+        socket.leave(identifier)
+        this.#logger.info(`socket.io ${socket.id} left ${name}:${identifier}`)
+      })
+    })
   }
   public get booted(): boolean {
     return this._io !== null
@@ -63,21 +77,7 @@ export class SocketManager {
       this.channelNames.push(name)
       return new SocketChannel(name)
     }
-    const channel = this.registerChannel(name)
-    channel.getNamespace().on('connection', (socket) => {
-      socket.on('subscribe', (identifier) => {
-        socket.join(identifier)
-        this.#logger.info(`socket.io ${socket.id} joined ${name}:${identifier}`)
-      })
-      socket.on('unsubscribe', (identifier) => {
-        socket.leave(identifier)
-        this.#logger.info(`socket.io ${socket.id} left ${name}:${identifier}`)
-      })
-      socket.on('message', (data) => {
-        this.broadcast(name, socket.id, data)
-      })
-    })
-    return channel
+    return this.registerChannel(name)
   }
 
   public broadcast(channelName: string, identifier: any, content: any) {
