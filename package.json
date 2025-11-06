@@ -5,10 +5,12 @@
   "engines": {
     "node": ">=20.6.0"
   },
+  "main": "./build/index.js",
   "type": "module",
   "files": [
     "build/src",
     "build/providers",
+    "build/services",
     "build/stubs",
     "build/index.d.ts",
     "build/index.js",
@@ -18,8 +20,8 @@
   "exports": {
     ".": "./build/index.js",
     "./types": "./build/src/types.js",
-    "./socket_provider": "./build/providers/socket_provider.js",
-    "./socket": "./build/src/socket.js"
+    "./services/*": "./build/services/*.js",
+    "./socket_provider": "./build/providers/socket_provider.js"
   },
   "scripts": {
     "clean": "del-cli build",

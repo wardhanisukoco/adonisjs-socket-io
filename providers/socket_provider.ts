@@ -1,5 +1,6 @@
 import { SocketManager } from '../src/socket_manager.js'
 import type { ApplicationService } from '@adonisjs/core/types'
+import { type SocketConfig } from '../src/index.js'
 
 declare module '@adonisjs/core/types' {
   export interface ContainerBindings {
@@ -8,41 +9,38 @@ declare module '@adonisjs/core/types' {
 }
 
 export class SocketProvider {
+  #socket: SocketManager | null = null
   constructor(protected app: ApplicationService) {}
 
-  /**
-   * Register bindings to the container
-   */
   register() {
-    this.app.container.singleton('socket', () => new SocketManager(this.app))
+    this.app.container.singleton('socket', async () => {
+      const config = this.app.config.get<SocketConfig>('socket')
+      const logger = await this.app.container.make('logger')
+      const server = await this.app.container.make('server')
+      this.#socket = new SocketManager(config, logger, server)
+      return this.#socket
+    })
   }
 
-  /**
-   * The container bindings have booted
-   */
-  async boot() {
-    // this.app.container.make('socket')
+  async boot() {}
+
+  async start() {
+    if (this.#socket) {
+      this.#socket.boot()
+    }
   }
 
-  /**
-   * The application has been booted
-   */
-  async start() {}
-
-  /**
-   * The process has been started
-   */
   async ready() {
-    const socket = await this.app.container.make('socket')
-    socket.boot()
+    if (this.#socket) {
+      this.#socket.boot()
+    }
   }
 
-  /**
-   * Preparing to shutdown the app
-   */
   async shutdown() {
-    const socket = await this.app.container.make('socket')
-    socket.io.close()
+    if (this.#socket) {
+      this.#socket.io.removeAllListeners()
+      this.#socket.io.close()
+    }
   }
 }
 

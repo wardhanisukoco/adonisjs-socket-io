@@ -1,0 +1,30 @@
+{{{
+  exports({
+    to: app.startPath('./', 'channels.ts')
+  })
+}}}
+/*
+|--------------------------------------------------------------------------
+| Socket Channel Routes
+|--------------------------------------------------------------------------
+|
+| This file is where you define all your socket.io channel routes.
+|
+*/
+import socket from 'adonisjs-socket-io/services/main'
+
+/**
+ * Example:
+ *
+ * import Room from '#models/room'
+ *
+ *  socket
+ *  .channel(Room.name)
+ *  .use('auth') // <-- middleware
+ *  .on('connection', (socket) => {
+ *      // This socket is authenticated
+ *      const user = socket.data.user
+ *      socket.on('join', ({ room }) => {
+ *      })
+ *  })
+ */

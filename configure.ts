@@ -13,5 +13,16 @@
 */
 
 import ConfigureCommand from '@adonisjs/core/commands/configure'
+import { stubsRoot } from './stubs/main.js'
 
-export async function configure(_command: ConfigureCommand) {}
+export async function configure(_command: ConfigureCommand) {
+  const codemods = await _command.createCodemods()
+
+  await codemods.makeUsingStub(stubsRoot, 'config/socket.stub', {})
+  await codemods.makeUsingStub(stubsRoot, 'start/channels.stub', {})
+
+  await codemods.updateRcFile((rcFile) => {
+    rcFile.addPreloadFile('#start/channels')
+    rcFile.addProvider('adonisjs-socket-io/socket_provider')
+  })
+}

@@ -1,0 +1,18 @@
+{{{
+  exports({
+    to: app.configPath('./', 'socket.ts')
+  })
+}}}
+import { defineConfig } from 'adonisjs-socket-io'
+
+export default defineConfig({
+    defaultGuard: null,
+    socketKernelPath: '#start/socket',
+    socketRouterPath: 'channels.ts',
+    socketIoOptions: {
+        path: 'channel',
+        cors: {
+            origin: '*'
+        }
+    }
+})

@@ -1,0 +1,35 @@
+{{{
+  exports({
+    to: app.middlewarePath('./', 'socket_middeware.ts')
+  })
+}}}
+import app from '@adonisjs/core/services/app'
+import type { Socket } from 'socket.io'
+
+export async function socketAuth(
+  socket: Socket,
+  next: (err?: Error) => void
+) {
+  // 1. Get the token from the handshake
+  const token = socket.handshake.auth.token
+  if (!token) {
+    return next(new Error('Authentication failed: No token provided.'))
+  }
+
+  try {
+    // 2. Resolve the auth service from the container
+    const auth = await app.container.make('auth')
+
+    // 3. Verify the token (using 'api' guard as an example)
+    const user = await auth.use('api').verify(token)
+
+    // 4. Attach user to the socket for use in listeners
+    socket.data.user = user
+
+    // 5. Grant access
+    next()
+  } catch (error) {
+    // 6. Deny access
+    return next(new Error('Authentication failed: Invalid token.'))
+  }
+}
