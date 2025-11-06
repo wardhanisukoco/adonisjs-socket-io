@@ -19,7 +19,6 @@ export type SocketConfig = {
   socketIoOptions: Partial<ServerOptions>
 
   socketKernelPath: string
-  socketRouterPath: string
 }
 
 export default SocketConfig

@@ -9,3 +9,5 @@
 
 export { configure } from './configure.js'
 export * from './src/index.js'
+
+export { defineConfig } from './src/define_config.js'

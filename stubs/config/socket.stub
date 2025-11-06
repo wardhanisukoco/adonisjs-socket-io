@@ -4,13 +4,12 @@
   })
 }}}
 import { defineConfig } from 'adonisjs-socket-io'
+import env from '#start/env'
 
 export default defineConfig({
-    defaultGuard: null,
+    defaultGuard: env.get('SOCKET_DEFAULT_GUARD'),
     socketKernelPath: '#start/socket',
-    socketRouterPath: 'channels.ts',
     socketIoOptions: {
-        path: 'channel',
         cors: {
             origin: '*'
         }

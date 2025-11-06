@@ -1,6 +1,6 @@
 import { SocketManager } from '../src/socket_manager.js'
 import type { ApplicationService } from '@adonisjs/core/types'
-import { type SocketConfig } from '../src/index.js'
+import { type SocketConfig } from '../src/socket_config.js'
 
 declare module '@adonisjs/core/types' {
   export interface ContainerBindings {
