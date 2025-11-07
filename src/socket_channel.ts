@@ -15,7 +15,10 @@ export class SocketChannel {
   ) {
     this.#logger = logger
   }
-
+  get namespace(): Namespace {
+    if (!this.#namespace) throw new Error('SocketChannel namespace not set')
+    return this.#namespace
+  }
   setNamespace(namespace: Namespace): this {
     this.setupHandlers(namespace)
     this.#namespace = namespace
@@ -48,22 +51,12 @@ export class SocketChannel {
     this.setupMiddlewares(namespace)
   }
   use(fn: (socket: Socket, next: (err?: Error) => void) => void | Promise<void>) {
-    if (this.#namespace) this.#namespace.use(fn)
-    else this.#middlewares.push(fn)
+    this.#middlewares.push(fn)
     return this
   }
   on(event: string, listener: (socket: Socket, ...args: any[]) => void | Promise<void>): this {
-    if (this.#namespace) this.#namespace.on(event, listener)
-    else {
-      if (!this.#listeners.has(event)) this.#listeners.set(event, [])
-      this.#listeners.get(event)?.push(listener)
-    }
+    if (!this.#listeners.has(event)) this.#listeners.set(event, [listener])
+    this.#listeners.get(event)?.push(listener)
     return this
   }
-  // on(event: string, listener: (socket: Socket, ...args: any[]) => void): this {
-  //   if (this.#namespace) {
-  //     this.#namespace.on(event, listener)
-  //   }
-  //   return this
-  // }
 }
