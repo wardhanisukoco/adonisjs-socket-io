@@ -73,7 +73,6 @@ export class SocketManager {
   }
   public channel(name: string): SocketChannel {
     if (!this._io) {
-      this.#logger.warn(`socket.io not booted, channel ${name} will lately registered`)
       this.channelNames.push(name)
       return new SocketChannel(name)
     }

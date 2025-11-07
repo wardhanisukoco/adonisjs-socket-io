@@ -4,16 +4,12 @@ import { Namespace, Socket } from 'socket.io'
  * Helper class that wraps the Namespace
  */
 export class SocketChannel {
-  public namespace: Namespace | null = null
+  private namespace: Namespace | null = null
   constructor(public channelName: string) {}
 
   setNamespace(namespace: Namespace): this {
     this.namespace = namespace
     return this
-  }
-  getNamespace(): Namespace {
-    if (!this.namespace) throw new Error('Namespace not set')
-    return this.namespace
   }
   isRegistered(): boolean {
     return this.namespace !== null
