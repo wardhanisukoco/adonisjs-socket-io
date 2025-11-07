@@ -27,7 +27,7 @@ export class SocketChannel {
   private setupListeners(socket: Socket) {
     for (const [event, listeners] of this.#listeners) {
       listeners.forEach((listener) => {
-        socket.on(event, listener)
+        socket.on(event, (...args) => listener(...args))
       })
     }
   }
