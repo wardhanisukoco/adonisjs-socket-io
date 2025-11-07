@@ -24,11 +24,11 @@ export default class SocketProvider {
 
   async boot() {}
 
-  async start() {
+  async start() {}
+
+  async ready() {
     await this.#socket?.boot()
   }
-
-  async ready() {}
 
   async shutdown() {
     if (this.#socket) {
