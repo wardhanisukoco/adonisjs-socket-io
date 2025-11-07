@@ -37,14 +37,22 @@ export class SocketManager {
       this.registerChannel(name)
     })
   }
+  private getNamespace(name: string): string {
+    return `/${name}`
+  }
   private registerChannel(name: string): SocketChannel {
-    const namespaceName = `/${name}`
+    const namespaceName = this.getNamespace(name)
+    const namespace = this.io.of(namespaceName)
+
     if (this.#channels.has(namespaceName)) {
       this.#logger.info(`socket.io already registered channel: ${name}`)
-      return this.#channels.get(namespaceName)!
+      const channel = this.#channels.get(namespaceName)!
+      if (!channel.hasNamespace) {
+        channel.setNamespace(namespace)
+      }
+      return channel
     }
 
-    const namespace = this.io.of(namespaceName)
     const channel = new SocketChannel(name, this.#logger).setNamespace(namespace)
 
     this.#channels.set(namespaceName, channel)
@@ -61,7 +69,9 @@ export class SocketManager {
   public channel(name: string): SocketChannel {
     if (!this.#io) {
       this.#channelNames.push(name)
-      return new SocketChannel(name, this.#logger)
+      const channel = new SocketChannel(name, this.#logger)
+      this.#channels.set(this.getNamespace(name), channel)
+      return channel
     }
     return this.registerChannel(name)
   }

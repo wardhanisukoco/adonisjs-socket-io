@@ -15,6 +15,9 @@ export class SocketChannel {
   ) {
     this.#logger = logger
   }
+  get hasNamespace(): boolean {
+    return this.#namespace !== null
+  }
   get namespace(): Namespace {
     if (!this.#namespace) throw new Error('SocketChannel namespace not set')
     return this.#namespace
