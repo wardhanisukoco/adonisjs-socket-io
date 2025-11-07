@@ -22,11 +22,11 @@ export default class SocketProvider {
     })
   }
 
-  async boot() {
+  async boot() {}
+
+  async start() {
     await this.#socket?.boot()
   }
-
-  async start() {}
 
   async ready() {}
 
