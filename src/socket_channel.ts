@@ -41,12 +41,12 @@ export class SocketChannel {
       socket.on('subscribe', (identifier) => {
         socket.join(identifier)
         this.#logger.info(`socket.io ${socket.id} joined ${this.channelName}:${identifier}`)
-        this.setupListeners(socket)
       })
       socket.on('unsubscribe', (identifier) => {
         socket.leave(identifier)
         this.#logger.info(`socket.io ${socket.id} left ${this.channelName}:${identifier}`)
       })
+      this.setupListeners(socket)
     })
     this.setupMiddlewares(namespace)
   }
@@ -55,7 +55,7 @@ export class SocketChannel {
     return this
   }
   on(event: string, listener: (socket: Socket, ...args: any[]) => void | Promise<void>): this {
-    if (!this.#listeners.has(event)) this.#listeners.set(event, [listener])
+    if (!this.#listeners.has(event)) this.#listeners.set(event, [])
     this.#listeners.get(event)?.push(listener)
     return this
   }
