@@ -38,12 +38,12 @@ export class SocketChannel {
       socket.on('subscribe', (identifier) => {
         socket.join(identifier)
         this.#logger.info(`socket.io ${socket.id} joined ${this.channelName}:${identifier}`)
+        this.setupListeners(socket)
       })
       socket.on('unsubscribe', (identifier) => {
         socket.leave(identifier)
         this.#logger.info(`socket.io ${socket.id} left ${this.channelName}:${identifier}`)
       })
-      this.setupListeners(socket)
     })
     this.setupMiddlewares(namespace)
   }
