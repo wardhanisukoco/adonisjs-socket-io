@@ -7,7 +7,7 @@ export class SocketChannel {
   #logger: LoggerService
   #namespace: Namespace | null = null
   #middlewares: ((socket: Socket, next: (err?: Error) => void) => void | Promise<void>)[] = []
-  #listeners: Map<string, ((socket: Socket, ...args: any[]) => void[])[]> = new Map()
+  #listeners: Map<string, ((socket: Socket, ...args: any[]) => void | Promise<void>)[]> = new Map()
 
   constructor(
     public channelName: string,
@@ -52,7 +52,7 @@ export class SocketChannel {
     else this.#middlewares.push(fn)
     return this
   }
-  on(event: string, listener: (socket: Socket, ...args: any[]) => void[]): this {
+  on(event: string, listener: (socket: Socket, ...args: any[]) => void | Promise<void>): this {
     if (this.#namespace) this.#namespace.on(event, listener)
     else {
       if (!this.#listeners.has(event)) this.#listeners.set(event, [])
